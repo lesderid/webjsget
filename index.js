@@ -3,10 +3,9 @@
 // TODO: Add option to specify out dir
 // TODO: Add option to ignore arbitrary paths (e.g. 'node_modules')
 // TODO: Add option for arbitrary path substitutions
-// TODO: Parse 'webpack/bootstrap' etc. to find more files
 // TODO: Make this available as a library
 
-import { parse } from "node-html-parser";
+import { parse as parseHtml } from "node-html-parser";
 import jsBeautify from "js-beautify";
 import prettier from "prettier";
 import assert from "node:assert/strict";
@@ -14,12 +13,14 @@ import hash from "string-hash";
 import _ from "lodash-es";
 import fs from "node:fs/promises";
 import {join as joinPaths, dirname} from "node:path";
+import { parse as parseJs } from "@babel/parser";
+
 
 async function getPage(url) {
     const request = await fetch(url);
     const text = await request.text();
 
-    return parse(text);
+    return parseHtml(text);
 }
 
 function getScripts(page, rootUrl) {
@@ -51,9 +52,13 @@ async function prettifyScript({text, path}) {
         } catch {
             try {
                 prettified = await prettify(text, `${path}.tsx`);
-            } catch (e) {
-                console.log({text, path});
-                throw e;
+            } catch {
+                try {
+                    prettified = await prettify(text, `${path}.ts`);
+                } catch (e) {
+                    console.log({text, path});
+                    throw e;
+                }
             }
         }
     }
@@ -76,7 +81,7 @@ async function getSourceMaps({src, text}) {
 }
 
 function extractSourceMapSources(sourceMap) {
-    assert(sourceMap.sources.length === sourceMap.sourcesContent.length);
+    assert(sourceMap.sources.length === (sourceMap.sourcesContent ?? []).length);
 
     const sources = [];
 
@@ -94,6 +99,8 @@ function cleanSourcePath({path, text}) {
                   .replace("webpack/bootstrap", "./_webpack/bootstrap.js")
                   .replace("(webpack)/buildin/", "./_webpack/buildin/")
                   .replace(/\$$/, "")
+                  .replace(/ lazy recursive .*entry.*/, "-lazy-recursive-any-entry")
+                  .replace(/ lazy .*entry.*/, "-lazy-recursive-any-entry")
                   .replace(/[\?#].*/, "")
     };
 }
@@ -121,6 +128,25 @@ async function writeSources(sources, baseDir) {
     }
 }
 
+function getAdditionalWebpackChunkUrls(sources, rootUrl) {
+    const webpackBootstrapSource = sources.find(s => s.path === "./_webpack/bootstrap.js");
+    const webpackBootstrapAST = parseJs(webpackBootstrapSource.text);
+    const jsonpScriptSrcReturnValueNode = webpackBootstrapAST
+        .program
+        .body
+        .find(n => n.type === "FunctionDeclaration" && n.id?.name === "jsonpScriptSrc")
+        ?.body
+        ?.body?.[0]
+        ?.argument;
+
+    if (jsonpScriptSrcReturnValueNode.left.operator !== "+" || jsonpScriptSrcReturnValueNode.right.value !== ".js") {
+        return null;
+    }
+
+    //don't you think?
+    return jsonpScriptSrcReturnValueNode.left.right.object.properties.map(n => `${new URL(rootUrl).origin}/${jsonpScriptSrcReturnValueNode.left.left.left.left.right.value}${n.key.value}.${n.value.value}.js`);
+}
+
 async function main() {
     if (process.argv.length != 3) {
         console.error(`usage: yarn start <URL>`);
@@ -138,12 +164,16 @@ async function main() {
     const externalScripts = await Promise.all(scripts.filter(s => s.src).map(s => s.src).map(async src => ({src, text: await (await fetch(src)).text()})));
     const sourceMaps = [...new Set((await Promise.all(externalScripts.map(getSourceMaps))).flat())];
     const externalSources = sourceMaps.map(extractSourceMapSources).flat().map(cleanSourcePath);
-    const prettyExternalSources = await Promise.all(externalSources.map(async s => ({text: await prettifyScript(s), path: s.path})));
 
+    const additionalScripts = await Promise.all(getAdditionalWebpackChunkUrls(externalSources, url).map(async src => ({src, text: await (await fetch(src)).text()})));
+    const additionalSourceMaps = [...new Set((await Promise.all(additionalScripts.map(getSourceMaps))).flat())];
+    const additionalSources = additionalSourceMaps.map(extractSourceMapSources).flat().map(cleanSourcePath);
+
+    const allExternalSources = _.uniqBy([...externalSources, ...additionalSources], JSON.stringify);
+
+    const prettyExternalSources = await Promise.all(allExternalSources.map(async s => ({text: await prettifyScript(s), path: s.path})));
     const sources = [...prettyEmbeddedSources, ...prettyExternalSources];
-
     const dedupedSources = dedupeSources(sources);
-
     await writeSources(dedupedSources, "./out/");
 }
 

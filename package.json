@@ -9,6 +9,7 @@
   },
   "packageManager": "yarn@4.1.1",
   "dependencies": {
+    "@babel/parser": "^7.24.4",
     "js-beautify": "^1.15.1",
     "lodash-es": "^4.17.21",
     "node-html-parser": "^6.1.13",

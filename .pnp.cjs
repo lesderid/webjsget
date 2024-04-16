@@ -26,6 +26,7 @@ const RAW_RUNTIME_STATE =
       [null, {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@babel/parser", "npm:7.24.4"],\
           ["js-beautify", "npm:1.15.1"],\
           ["lodash-es", "npm:4.17.21"],\
           ["node-html-parser", "npm:6.1.13"],\
@@ -33,6 +34,46 @@ const RAW_RUNTIME_STATE =
           ["string-hash", "npm:1.1.3"]\
         ],\
         "linkType": "SOFT"\
+      }]\
+    ]],\
+    ["@babel/helper-string-parser", [\
+      ["npm:7.24.1", {\
+        "packageLocation": "./.yarn/cache/@babel-helper-string-parser-npm-7.24.1-0a40ece7f8-2f9bfcf8d2.zip/node_modules/@babel/helper-string-parser/",\
+        "packageDependencies": [\
+          ["@babel/helper-string-parser", "npm:7.24.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@babel/helper-validator-identifier", [\
+      ["npm:7.22.20", {\
+        "packageLocation": "./.yarn/cache/@babel-helper-validator-identifier-npm-7.22.20-18305bb306-dcad63db34.zip/node_modules/@babel/helper-validator-identifier/",\
+        "packageDependencies": [\
+          ["@babel/helper-validator-identifier", "npm:7.22.20"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@babel/parser", [\
+      ["npm:7.24.4", {\
+        "packageLocation": "./.yarn/cache/@babel-parser-npm-7.24.4-f329cbb36f-8381e1efea.zip/node_modules/@babel/parser/",\
+        "packageDependencies": [\
+          ["@babel/parser", "npm:7.24.4"],\
+          ["@babel/types", "npm:7.24.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@babel/types", [\
+      ["npm:7.24.0", {\
+        "packageLocation": "./.yarn/cache/@babel-types-npm-7.24.0-a0508cb308-777a0bb5db.zip/node_modules/@babel/types/",\
+        "packageDependencies": [\
+          ["@babel/types", "npm:7.24.0"],\
+          ["@babel/helper-string-parser", "npm:7.24.1"],\
+          ["@babel/helper-validator-identifier", "npm:7.22.20"],\
+          ["to-fast-properties", "npm:2.0.0"]\
+        ],\
+        "linkType": "HARD"\
       }]\
     ]],\
     ["@isaacs/cliui", [\
@@ -615,11 +656,21 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["to-fast-properties", [\
+      ["npm:2.0.0", {\
+        "packageLocation": "./.yarn/cache/to-fast-properties-npm-2.0.0-0dc60cc481-b214d21dbf.zip/node_modules/to-fast-properties/",\
+        "packageDependencies": [\
+          ["to-fast-properties", "npm:2.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["webjsget", [\
       ["workspace:.", {\
         "packageLocation": "./",\
         "packageDependencies": [\
           ["webjsget", "workspace:."],\
+          ["@babel/parser", "npm:7.24.4"],\
           ["js-beautify", "npm:1.15.1"],\
           ["lodash-es", "npm:4.17.21"],\
           ["node-html-parser", "npm:6.1.13"],\
