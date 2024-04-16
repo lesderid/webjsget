@@ -1,0 +1,11 @@
+diff --git a/package.json b/package.json
+index 1b27ec7ab45d25eb451422ce97787414da06aa06..b2620ad2c1ddc28952bfbc4b6d561b69fb399571 100644
+--- a/package.json
++++ b/package.json
+@@ -194,5 +194,5 @@
+     "standalone.js",
+     "standalone.mjs"
+   ],
+-  "preferUnplugged": true
++  "preferUnplugged": false
+ }
