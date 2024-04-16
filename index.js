@@ -1,6 +1,4 @@
 // TODO: Keep external sources without sourcemaps
-// TODO: Check if deduping works
-// TODO: Check if deduping is actually necessary (if not: get rid of lodash)
 // TODO: Use eslint
 // TODO: Add option to specify out dir
 // TODO: Add option to ignore arbitrary paths (e.g. 'node_modules')
@@ -102,7 +100,7 @@ function cleanSourcePath({path, text}) {
 
 function dedupeSources(sources) {
     return _(sources).groupBy("path").values().flatMap(ss => {
-        const sortedSources = _.sortBy(ss, s => -s.text.length);
+        const sortedSources = _(ss).sortBy(s => -s.text.length).sortedUniqBy(s => s.text).value();
         return [
             sortedSources[0],
             ...sortedSources.splice(1).map(s => ({
@@ -146,7 +144,7 @@ async function main() {
 
     const dedupedSources = dedupeSources(sources);
 
-    await writeSources(sources, "./out/");
+    await writeSources(dedupedSources, "./out/");
 }
 
 main();
